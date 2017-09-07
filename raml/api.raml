@@ -1,0 +1,133 @@
+#%RAML 1.0
+title: fantasysportsapp
+version: v1
+baseUri: https://safe-reef-58338.herokuapp.com/
+
+/user:
+  post:
+    queryParameters:
+      name: string
+      email: string
+      password: string
+
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              {
+                data: {
+                  "id" : "abc",
+                  "name": "Tim Oliphant",
+                  "member_since" : "12031231231",
+                  "isActive" : "true",
+                  "leagues" : [
+                  {"id" : "1111"},
+                  { "id" : "2222"}]
+                },
+                "success" : true,
+                "status" : 200
+              }
+      500 :
+        body :
+          application/json:
+            example: {
+              "error_message" : "Could not create user, user already exists",
+              "success" : false,
+              "status" : 500
+              }
+
+
+  get:
+    queryParameters:
+      query : string
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              {
+                data: {
+                  "users" : [
+                  {
+                  "id" : "2",
+                  "name": "Tim M",
+                  "member_since" : "12031231231",
+                  "isActive" : "true",
+                  "leagues" : [
+                    {"id" : "1111"},
+                    { "id" : "2222"}]
+                 },{
+                  "id" : "1",
+                  "name": "Tim T",
+                  "member_since" : "9089810212",
+                  "isActive" : "true",
+                  "leagues" : [
+                    {"id" : "444"},
+                    { "id" : "2222"}
+                  ]
+                }]
+             },
+              "success" : true,
+              "status" : 200
+            }
+      500:
+        body:
+          application/json:
+            example: {
+              "error_message": "Could not find user with requested information, Please try again.",
+              "success" : false,
+              "status" : 500
+              }
+  delete:
+    queryParameters:
+      id : integer
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              {
+                 "success" : true,
+                 "status" : 200
+              }
+      500:
+        body:
+          application/json:
+            example: {
+              "error_message": "Error occured while deleting user",
+              "success" : false,
+              "status" : 500
+              }
+  /{userid}:
+     post:
+       queryParameters:
+         name : string
+         email : string
+         password : string
+       responses:
+         200:
+           body:
+             application/json:
+               example:
+                 {
+                   data: {
+                     "id" : "abc",
+                     "name": "Tim Oliphant",
+                     "member_since" : "12031231231",
+                     "isActive" : "true",
+                     "leagues" : [
+                     {"id" : "1111"},
+                     { "id" : "2222"}]
+                   },
+                   "success" : true,
+                   "status" : 200
+                 }
+         500:
+           body:
+             application/json:
+               example: {
+                 "error_message": "Error occured while updating user",
+                 "success" : false,
+                 "status" : 500
+                 }
