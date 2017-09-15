@@ -9,22 +9,13 @@ baseUri: https://safe-reef-58338.herokuapp.com/
       name: string
       email: string
       password: string
-
+      paypalinfo: string
     responses:
       200:
         body:
           application/json:
             example:
               {
-                data: {
-                  "id" : "abc",
-                  "name": "Tim Oliphant",
-                  "member_since" : "12031231231",
-                  "isActive" : "true",
-                  "leagues" : [
-                  {"id" : "1111"},
-                  { "id" : "2222"}]
-                },
                 "success" : true,
                 "status" : 200
               }

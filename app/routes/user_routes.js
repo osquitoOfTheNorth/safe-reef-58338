@@ -4,10 +4,10 @@ module.exports = function(app, db) {
     res.send('Hello');
   });
 
-  app.get('/board', (req,res) => {
+  app.get('', (req,res) => {
   	res.send("Board");
   });
 
-  
+
 };
 
