@@ -4,9 +4,19 @@ const MongoClient = require('mongodb').MongoClient
 const bodyParser = require('body-parser').MongoClient
 
 const app = express();
+var db
 
-require('./app/routes') (app,{});
+
+
+MongoClient.MongoClient.connect(process.env.MONGODB_URI,function(err,database){
+	if(err){
+		console.log(err)
+		process.exit(1)
+	}
+	db = database
+	require('./app/routes') (app,db);
+})
+
 
 app.listen(port, () => {
-	console.log("Live on the internet!!");
 })

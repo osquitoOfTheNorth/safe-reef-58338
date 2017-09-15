@@ -1,11 +1,18 @@
 module.exports = function(app, db) {
+  
+  var user_table = "user_table"
+  
+
   app.get('/user', (req, res) => {
-    // You'll create your note here.
-    res.send('Hello');
+    
+    
   });
 
-  app.get('', (req,res) => {
-  	res.send("Board");
+  app.post('/user', (req,res) => {
+  	var newUsr = req.body;
+  	db.collection(user_table).insertOne(newUsr,function(err,doc){
+  		res.json(doc)
+  	}
   });
 
 
