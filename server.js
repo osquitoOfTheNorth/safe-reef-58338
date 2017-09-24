@@ -8,7 +8,7 @@ var db
 
 
 
-MongoClient.MongoClient.connect(process.env.MONGODB_URI,function(err,database){
+MongoClient.connect(process.env.MONGODB_URI,function(err,database){
 	if(err){
 		console.log(err)
 		process.exit(1)
