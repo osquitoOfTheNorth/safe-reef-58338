@@ -7,8 +7,11 @@ const app = express();
 var db
 
 
-
-MongoClient.connect(process.env.MONGODB_URI,function(err,database){
+var dbConnectionString = "mongodb://localhost/db";
+if(process.env.MONGODB_URI) {
+ 	dbConnectionString = process.env.MONGODB_URI;
+}
+MongoClient.connect(dbConnectionString,function(err,database){
 	if(err){
 		console.log(err)
 		process.exit(1)
