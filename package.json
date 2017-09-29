@@ -15,7 +15,9 @@
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "^4.15.4",
-    "mongodb": "^2.2.31"
+    "mongodb": "^2.2.31",
+    "jwt-simple":"^0.2.02",
+    "morgan" : "^1.3.1"
   },
   "devDependencies": {
     "nodemon": "^1.12.0"

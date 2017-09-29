@@ -3,6 +3,7 @@ module.exports = function(app, db) {
   var user_table = "user_table"
 
 
+
   app.get('/user', (req, res) => {
     res.json("{}")
 
