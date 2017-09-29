@@ -20,6 +20,16 @@ var Auth0 = jwt({
 
 const app = express();
 app.use(Auth0);
+
+//Send a more user friendly response for unauthorized access
+app.use(function (err, req, res, next) {
+  if (err.name === 'UnauthorizedError') {
+    res.status(401).json({message:'Missing or invalid token'});
+  }
+});
+
+
+
 var db
 
 
