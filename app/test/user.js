@@ -10,24 +10,25 @@ chai.use(chaiHttp);
 
 
 describe("Users", () => {
-  // beforeEach((done) => {
-  //
-  //
-  //   var options = { method: 'POST',
-  //   url: 'https://safereef.auth0.com/oauth/token',
-  //   headers: { 'content-type': 'application/json' },
-  //   body: '{"client_id":"E7lHEXLm6Q438xG1OQHPGOt0ch6jx1Rh","client_secret":"jKmqL9lvjiXrs0WCGgOJ-oibsEW0f28AaA2ubQeqZNppd-dG0z84GDX94_oL6QY2","audience":"https://project-safe-reef/","grant_type":"client_credentials"}' };
-  //
-  //   request(options, function (error, response, body) {
-  //     if (error) throw new Error(error);
-  //     temp = JSON.parse(body);
-  //     secureHeader = temp["access-token"];
-  //   });
-  // });
+  beforeEach((done) => {
+    var options = { method: 'POST',
+    url: 'https://safereef.auth0.com/oauth/token',
+    headers: { 'content-type': 'application/json' },
+    body: '{"client_id":"E7lHEXLm6Q438xG1OQHPGOt0ch6jx1Rh","client_secret":"jKmqL9lvjiXrs0WCGgOJ-oibsEW0f28AaA2ubQeqZNppd-dG0z84GDX94_oL6QY2","audience":"https://project-safe-reef/","grant_type":"client_credentials"}' };
+    request(options, function (error, response, body) {
+      if (error) throw new Error(error);
+      temp = JSON.parse(body);
+      secureHeader = temp["access_token"];
+      done();
+    });
+  });
+
+
   describe("/GET users based on keywords" , () => {
     it("should return a new user from the database", (done) => {
       chai.request(server)
           .get("/api/v1/user")
+          .set('Authorization', 'Bearer ' + secureHeader)
           .send("")
           .end((err,res) => {
             res.should.have.status(200);
@@ -44,8 +45,8 @@ describe("Users", () => {
         "paypalinfo": "paypaluser@test.com"
       }
       chai.request(server)
-          //.set('Authorization', 'Bearer ' + secureHeader)
           .post('/api/v1/user')
+          .set('Authorization', 'Bearer ' + secureHeader)
           .query({"user" : user})
           .end((err,res) => {
             res.should.have.status(200);

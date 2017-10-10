@@ -19,7 +19,7 @@ var Auth0 = jwt({
 
 
 const app = express();
-//app.use(Auth0);
+app.use(Auth0);
 
 //Send a more user friendly response for unauthorized access
 app.use(function (err, req, res, next) {
