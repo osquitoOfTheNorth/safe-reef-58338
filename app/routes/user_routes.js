@@ -9,7 +9,8 @@ module.exports = function(app, db) {
       } else {
         res.write(JSON.stringify(data));
       }
-      res();
+      res.send();
+
     });
   });
 
