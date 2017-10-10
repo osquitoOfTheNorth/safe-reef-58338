@@ -19,7 +19,7 @@ var Auth0 = jwt({
 
 
 const app = express();
-app.use(Auth0);
+//app.use(Auth0);
 
 //Send a more user friendly response for unauthorized access
 app.use(function (err, req, res, next) {
@@ -46,16 +46,16 @@ MongoClient.connect(dbConnectionString,function(err,database){
 		process.exit(1)
 	}
 	db = database
-	require('./app/routes') (app,db);
-})
-
-// If no route is matched by now, it must be a 404
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+	routes = require('./app/routes')
+  routes(app,db);
 });
 
+app.listen(port, () => {});
+// If no route is matched by now, it must be a 404
+// app.use(function(req, res, next) {
+//   var err = new Error('Not Found');
+//   err.status = 404;
+//   next(err);
+// });
 
-app.listen(port, () => {
-})
+module.exports = app;
