@@ -22,6 +22,29 @@ let user2 = {
 
 
 
+let user3 = {
+  "_id" : "FlimFlam",
+  "name" :"Tim Tom",
+  "email": "t@2.com",
+  "password": "1",
+  "paypalinfo": "a@test.com"
+}
+
+
+let user4 = {
+  "name" :"Tim Tom",
+  "password": "1",
+  "paypalinfo": "a@test.com"
+}
+
+
+let user5 = {
+  "name" :"",
+  "email": "",
+  "password": "",
+  "paypalinfo": "a@test.com"
+}
+
 function postUser(callDone, usertoInsert){
   chai.request(server)
       .post('/api/v1/user')
@@ -33,7 +56,17 @@ function postUser(callDone, usertoInsert){
         res.body.should.have.property('success');
         res.body.should.have.property('status');
         res.body.should.have.property('success').eql(true);
-        callDone()
+        callDone();
+      });
+}
+
+function deleteAll(callDone){
+  chai.request(server)
+      .delete("/api/v1/user")
+      .query({"_id": "All"})
+      .set('Authorization', 'Bearer ' + secureHeader)
+      .end((err,res) => {
+        callDone();
       });
 }
 
@@ -47,18 +80,42 @@ describe("Users", () => {
       if (error) throw new Error(error);
       temp = JSON.parse(body);
       secureHeader = temp["access_token"];
+      deleteAll(done);
+    });
+  });
+
+  describe("/POST new User, missing required inputs" , () => {
+    it("should post a new user to database", (done) => {
       chai.request(server)
-          .delete("/api/v1/user")
+          .post('/api/v1/user')
+          .set('Authorization', 'Bearer ' + secureHeader)
+          .query({"user" : user4})
           .end((err,res) => {
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.should.have.property('success');
+            res.body.should.have.property('status');
+            res.body.should.have.property('success').eql(false);
+            res.body.should.have.property('error_message').eql("Document failed validation. Failed with error code: 121");
             chai.request(server)
-                .delete("/api/v1/user")
+                .post('/api/v1/user')
                 .set('Authorization', 'Bearer ' + secureHeader)
+                .query({"user" : user5})
                 .end((err,res) => {
+                  res.should.have.status(200);
+                  res.body.should.be.a('object');
+                  res.body.should.have.property('success');
+                  res.body.should.have.property('status');
+                  res.body.should.have.property('success').eql(false);
+                  res.body.should.have.property('error_message').eql("Document failed validation. Failed with error code: 121");
                   done();
                 });
           });
-    });
+
+      });
   });
+
+
 
   describe("/POST new User" , () => {
     it("should post a new user to database", (done) => {
@@ -83,6 +140,79 @@ describe("Users", () => {
             chai.assert(response[0].name == "Tim Tester", "Incorrect Filtering of User");
             res.should.have.status(200);
             done();
+          });
+      });
+    });
+
+  describe("/DELETE user from database with id", () => {
+    before(("insert test user prior to deleting"), (done) => {
+      deleteAll(function(){  postUser(() => {done();}, user3); });
+    });
+    it("should delete user from database and return success", (done) => {
+      chai.request(server)
+          .delete("/api/v1/user")
+          .set("Authorization", 'Bearer ' + secureHeader)
+          .query({"_id" : "FlimFlam"})
+          .end((err,res) => {
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.should.have.property('success');
+            res.body.should.have.property('status');
+            res.body.should.have.property('success').eql(true);
+            chai.request(server)
+              .get("/api/v1/user")
+              .set('Authorization', 'Bearer ' + secureHeader)
+              .query({"searchString" : "\"Tim Tom\""})
+              .end((err,res) => {
+                var response = JSON.parse(res.body);
+                chai.assert(Array.isArray(response), "Oooops bad response!");
+                chai.assert(response.length == 0, "Incorrect Deletion Of User By Id");
+                done();
+              })
+          });
+    });
+  });
+
+  describe("Attempt to /DELETE user from database with id, user doesnt exist", () => {
+    before(("insert test user prior to deleting"), (done) => {
+      postUser(() => {done();}, user3);
+    });
+    it("should delete user from database and return success", (done) => {
+      chai.request(server)
+          .delete("/api/v1/user")
+          .set("Authorization", 'Bearer ' + secureHeader)
+          .query({"_id" : "TestId"})
+          .end((err,res) => {
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.should.have.property('success');
+            res.body.should.have.property('status');
+            res.body.should.have.property('success').eql(false);
+            res.body.should.have.property('error_message');
+            res.body.should.have.property('error_message').eql("No such user found");
+            done();
+          });
+    });
+  });
+
+  describe("Attempt to /DELETE user from database malformed input", () => {
+    before(("insert test user prior to deleting"), (done) => {
+      postUser(() => {done();}, user);
+    });
+    it("should delete user from database and return success", (done) => {
+      chai.request(server)
+          .delete("/api/v1/user")
+          .set("Authorization", 'Bearer ' + secureHeader)
+          .end((err,res) => {
+            res.body.should.have.property("error_message").eql("Invalid method parameters")
+            chai.request(server)
+                .delete("/api/v1/user")
+                .set("Authorization", 'Bearer ' + secureHeader)
+                .query({"" : ""})
+                .end((err,res) => {
+                  res.body.should.have.property("error_message").eql("Invalid method parameters")
+                  done();
+                })
           });
       });
     });
