@@ -45,6 +45,15 @@ let user5 = {
   "paypalinfo": "a@test.com"
 }
 
+
+let user6 = {
+  "_id" : "FlimFlam",
+  "name" :"Lord Voldemort",
+  "email": "tom.marvolo.riddle@gmail.com",
+  "password": "purebloodedwizardsonly111",
+  "paypalinfo": ""
+}
+
 function postUser(callDone, usertoInsert){
   chai.request(server)
       .post('/api/v1/user')
@@ -83,6 +92,18 @@ describe("Users", () => {
       deleteAll(done);
     });
   });
+  describe("Attempt to make an unauthorized request" , () => {
+     it("should post a new user to database", (done) => {
+       chai.request(server)
+           .post('/api/v1/user')
+           .query({"user" : user4})
+           .end((err,res) => {
+               err.status.should.eql(401)
+               err.response.body.should.have.property("message").eql("Missing or invalid token")
+               done();
+           });
+       });
+   });
 
   describe("/POST new User, missing required inputs" , () => {
     it("should post a new user to database", (done) => {
@@ -123,10 +144,34 @@ describe("Users", () => {
     });
   });
 
-  describe("/GET users based on keywords" , () => {
+  describe("/GET users based on keywords, no user matching query" , () => {
     before((done) =>{
+      deleteAll(function () {
           postUser(function(){}, user2);
           postUser(function(){ done(); }, user);
+      });
+    });
+    it("should return a new user from the database", (done) => {
+      chai.request(server)
+          .get("/api/v1/user")
+          .set('Authorization', 'Bearer ' + secureHeader)
+          .query({"searchString" : "\"ffffffff\""})
+          .end((err,res) => {
+            var response = JSON.parse(res.body);
+            chai.assert(Array.isArray(response), "Oooops bad response!");
+            chai.assert(response.length == 0, "Incorrect Filtering Of User");
+            res.should.have.status(200);
+            done();
+          });
+      });
+    });
+
+  describe("/GET users based on keywords" , () => {
+    before((done) =>{
+      deleteAll(function () {
+          postUser(function(){}, user2);
+          postUser(function(){ done(); }, user);
+      });
     });
     it("should return a new user from the database", (done) => {
       chai.request(server)
@@ -173,9 +218,50 @@ describe("Users", () => {
     });
   });
 
+  describe("Attempt to post existing user to database with a minor update", () => {
+    before(("insert test user to modify later"), (done) => {
+      postUser(() => {done();}, user3);
+    });
+    it("should successfully update user3 ", (done) => {
+        chai.request(server)
+            .post("/api/v1/user/FlimFlam")
+            .set('Authorization', 'Bearer ' + secureHeader)
+            .query(user6)
+            .end((err,res) => {
+              var responseParsed = JSON.parse(res.body);
+              responseParsed.should.be.a("object");
+              responseParsed.should.have.property("_id").eql("FlimFlam");
+              responseParsed.should.have.property("name").eql("Lord Voldemort");
+              responseParsed.should.have.property("email").eql("tom.marvolo.riddle@gmail.com");
+              responseParsed.should.have.property("password").eql("purebloodedwizardsonly111");
+              responseParsed.should.have.property("paypalinfo").eql("");
+              done();
+            });
+        });
+    });
+
+
+    describe("Attempt to post existing user to database with a minor update, should fail due to update not meeting db table constraints", () => {
+      before(("insert test user to modify later"), (done) => {
+        deleteAll( () => {postUser(() => {done();}, user3); });
+      });
+      it("should successfully update user3 ", (done) => {
+          user6.password = null;
+          chai.request(server)
+              .post("/api/v1/user/FlimFlam")
+              .set('Authorization', 'Bearer ' + secureHeader)
+              .query(user6)
+              .end((err,res) => {
+                res.body.should.be.a("object");
+                res.body.should.have.property("error_message").eql('Could not successfully update user with Id: FlimFlam')
+                res.body.should.have.property("success").eql(false)
+                done();
+              });
+          });
+  });
   describe("Attempt to /DELETE user from database with id, user doesnt exist", () => {
     before(("insert test user prior to deleting"), (done) => {
-      postUser(() => {done();}, user3);
+      deleteAll( () => {postUser(() => {done();}, user3); });
     });
     it("should delete user from database and return success", (done) => {
       chai.request(server)
@@ -194,6 +280,25 @@ describe("Users", () => {
           });
     });
   });
+  describe("Attempt to post existing user to database with a minor update, user does not exist in database", () => {
+    before(("insert test user to modify later"), (done) => {
+      deleteAll( () => {done();});
+    });
+    it("should fail to update user3 since user3 does not exist", (done) => {
+        user6.password = null;
+        chai.request(server)
+            .post("/api/v1/user/FlimFlam")
+            .set('Authorization', 'Bearer ' + secureHeader)
+            .query(user6)
+            .end((err,res) => {
+              res.body.should.be.a("object");
+              res.body.should.have.property("error_message").eql('Could not successfully update user with Id: FlimFlam')
+              res.body.should.have.property("success").eql(false)
+              done();
+            });
+        });
+  });
+
 
   describe("Attempt to /DELETE user from database malformed input", () => {
     before(("insert test user prior to deleting"), (done) => {

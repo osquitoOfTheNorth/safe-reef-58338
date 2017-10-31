@@ -32,7 +32,7 @@ db.createCollection("users",{ validator: { $and:
     } else if (req.query._id != null && isAlphaNumeric(req.query._id)){
       users.remove({_id: req.query._id},(err,doc) => {
         if(doc.result.n <= 0){
-          handleMongoCallback("No such user found",doc,res);
+          handleMongoCallback("No such user found",doc,res,false);
         } else {
           handleMongoCallback(err,doc,res);
         }
@@ -41,6 +41,22 @@ db.createCollection("users",{ validator: { $and:
     res.send(getFailureJson("Invalid method parameters"));
     }
   });
+
+  app.post('/api/v1/user/:user_id', (req,res) => {
+    if(isAlphaNumeric(req.params.user_id)){
+      users.findOneAndUpdate({"_id" : req.params.user_id}, {$set : req.query}, {returnOriginal: false}, (err,doc) =>{
+        if(err || doc.lastErrorObject.n <= 0){
+          var errMsg = "Could not successfully update user with Id: " + req.params.user_id;
+          handleMongoCallback(errMsg, doc, res, false);
+        } else {
+          handleMongoCallback(err,JSON.stringify(doc.value),res,true);
+        }
+      });
+    } else {
+      req.send(getFailureJson("Invalid Request parameters"));
+    }
+
+  })
 
   const handleMongoCallback = (err,doc,res,writedoc) => {
     if(err){
