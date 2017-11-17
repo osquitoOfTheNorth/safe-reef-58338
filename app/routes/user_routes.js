@@ -22,6 +22,7 @@ db.createCollection("users",{ validator: { $and:
   });
 
   app.post('/api/v1/user', (req,res) => {
+    
     var user = req.body;
   	users.insertOne(user,(err,doc) => { handleMongoCallback(err,doc,res); });
   });
