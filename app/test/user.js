@@ -58,7 +58,7 @@ function postUser(callDone, usertoInsert){
   chai.request(server)
       .post('/api/v1/user')
       .set('Authorization', 'Bearer ' + secureHeader)
-      .query({"user" : usertoInsert})
+      .send(usertoInsert)
       .end((err,res) => {
         res.should.have.status(200);
         res.body.should.be.a('object');

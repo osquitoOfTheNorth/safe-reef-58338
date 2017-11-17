@@ -1,7 +1,7 @@
 const port = process.env.PORT || 5000;
 const express = require('express');
 const MongoClient = require('mongodb').MongoClient
-const bodyParser = require('body-parser').MongoClient
+const bodyParser = require('body-parser')
 var jwt = require('express-jwt');
 var jwks = require('jwks-rsa');
 
@@ -28,7 +28,10 @@ app.use(function (err, req, res, next) {
   }
 });
 
-
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+app.use(bodyParser.json());
 
 var db
 
